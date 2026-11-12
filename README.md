@@ -2,9 +2,9 @@
 
 Onboarding and waitlist for newcomers who want their credit history from home to count in the US. Built by Team 213 (Himali Saini, Tasos Gerasis, Varun Kulkarni, Elena Hu) for TECH 5900 Product Studio at Cornell Tech.
 
-The page runs two experiments from our de-risking plan:
+The page follows the Arrive prototype's onboarding screens (Welcome, Verify it's you, Scan your PAN card, Bring your credit history, Unlock your US credit profile, Cards matched to you) and ends on a waitlist. It never collects a passport, visa, selfie or PAN number. It runs two experiments from our de-risking plan:
 
-- **Consent page test (Card 3).** Each visitor sees either a plain consent page or one with privacy controls and the team's names. We count who gives permission and who asks to share their CIBIL report early.
+- **Consent screen test (Card 3).** Each visitor sees either a plain consent screen or one that lists what we read and never touch, with the team's names. We count who gives permission and who asks to share their CIBIL report early.
 - **Price test.** Each visitor sees one founding price: $19, $29 or $49. We count who reserves a spot.
 
 It also records when people arrive, what they need credit for first, what has happened to them so far, and how they heard about us.

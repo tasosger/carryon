@@ -6,290 +6,161 @@
 <title>Carryon early access</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* Layout: one column. A boarding pass sits on top and fills in as the traveller answers; questions sit below it. */
-  --paper: #eef1f6;
-  --card: #ffffff;
-  --ink: #15233f;
-  --muted: #5a6680;
-  --line: #d6dce7;
-  --accent: #df9410;
-  --accent-soft: #fbefd6;
-  --ok: #1d7a4b;
-  --warn: #a8361f;
-  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Layout: one phone-width screen per step, the prototype's flow; copy at the top, action anchored at the bottom. Single light theme, as in the prototype. */
+  --page: #e9ece9;
+  --bg: #ffffff;
+  --ink: #111814;
+  --muted: #69716c;
+  --line: #e3e5e2;
+  --soft: #f4f3f1;
+  --green: #0f6b4b;
+  --green-soft: #e4f1e9;
+  --warn: #b3412a;
+  --font: "Manrope", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #0d1422;
-    --card: #152036;
-    --ink: #e6ebf4;
-    --muted: #9ba7be;
-    --line: #2a3752;
-    --accent: #f0ae38;
-    --accent-soft: #3a2e14;
-    --ok: #4cc48a;
-    --warn: #f08a72;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #0d1422;
-  --card: #152036;
-  --ink: #e6ebf4;
-  --muted: #9ba7be;
-  --line: #2a3752;
-  --accent: #f0ae38;
-  --accent-soft: #3a2e14;
-  --ok: #4cc48a;
-  --warn: #f08a72;
-  color-scheme: dark;
-}
-
 * { box-sizing: border-box; }
-html, body { margin: 0; }
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+html, body { margin: 0; height: 100%; }
+body { background: var(--page); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+.phone {
+  max-width: 430px; min-height: 100%; margin: 0 auto; background: var(--bg);
+  display: flex; flex-direction: column;
 }
-.app {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 18px 16px 56px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+@media (min-width: 560px) {
+  body { padding: 24px 0; }
+  .phone { min-height: calc(100% - 0px); border-radius: 28px; box-shadow: 0 24px 60px -30px rgba(17, 24, 20, 0.35); border: 1px solid var(--line); }
 }
+.screen { flex: 1; display: flex; flex-direction: column; gap: 18px; padding: 22px 22px 26px; }
+.preview { margin: 14px 22px 0; font-size: 12.5px; color: var(--muted); background: var(--soft); border-radius: 12px; padding: 9px 12px; }
+.preview b { color: var(--ink); }
 
-/* Header */
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.wordmark {
-  font-family: var(--display);
-  font-stretch: 125%;
-  font-weight: 800;
-  font-size: 22px;
-  letter-spacing: -0.01em;
-  display: inline-flex; align-items: center; gap: 8px;
-}
-.wordmark svg { width: 22px; height: 22px; }
-.tag {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 3px 10px;
-}
-.preview {
-  font-size: 13px;
-  color: var(--muted);
-  background: var(--card);
-  border: 1px dashed var(--line);
-  border-radius: 12px;
-  padding: 10px 12px;
-}
-.preview strong { color: var(--ink); }
+/* Top bar with back button and step progress */
+.bar { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: center; }
+.back { width: 44px; height: 44px; border-radius: 12px; border: 0; background: var(--soft); color: var(--ink); cursor: pointer; display: grid; place-items: center; }
+.back svg { width: 18px; height: 18px; }
+.steps { display: grid; gap: 7px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.track { height: 5px; background: var(--line); border-radius: 5px; overflow: hidden; }
+.track i { display: block; height: 100%; background: var(--green); border-radius: 5px; transition: width 0.35s ease; }
 
-/* Boarding pass */
-.pass {
-  position: relative;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 10px 30px -18px rgba(21, 35, 63, 0.45);
-  overflow: hidden;
-}
-.pass-main { padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 14px; }
-.pass-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.example-flag { color: var(--accent); font-weight: 600; }
-.route { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 10px; }
-.route .end:last-child { text-align: right; }
-.code {
-  font-family: var(--display);
-  font-stretch: 125%;
-  font-weight: 900;
-  font-size: clamp(38px, 11vw, 54px);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-}
-.place { font-size: 13px; color: var(--muted); margin-top: 4px; }
-.flight { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 18px; color: var(--accent); }
-.flight svg { width: 30px; height: 30px; }
-.flight .dash { width: 64px; border-top: 2px dashed var(--line); }
-.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
-.field .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.field .v { font-weight: 600; font-size: 15px; min-height: 22px; overflow-wrap: anywhere; }
-.field .v.empty { color: var(--line); }
-.field .v.flash { animation: flash 0.9s ease-out; }
-@keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
-
-.perf { position: relative; height: 0; border-top: 2px dashed var(--line); margin: 0 14px; }
-.perf::before, .perf::after {
-  content: ""; position: absolute; top: -12px; width: 22px; height: 22px; border-radius: 50%;
-  background: var(--paper); border: 1px solid var(--line);
-}
-.perf::before { left: -26px; }
-.perf::after { right: -26px; }
-.stub { padding: 12px 18px 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-.barcode {
-  height: 34px; flex: 1; max-width: 230px;
-  background: repeating-linear-gradient(90deg,
-    var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px,
-    var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 16px,
-    var(--ink) 16px 17px, transparent 17px 19px, var(--ink) 19px 22px, transparent 22px 25px);
-  opacity: 0.85;
-  border-radius: 2px;
-}
-.status-pill {
-  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap;
-}
-.status-pill.on { color: var(--ok); border-color: var(--ok); }
-.stamp {
-  position: absolute; right: 18px; top: 56px;
-  font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: 20px; letter-spacing: 0.06em;
-  color: var(--ok); border: 3px solid var(--ok); border-radius: 10px; padding: 4px 12px;
-  transform: rotate(-9deg); opacity: 0.92; pointer-events: none; background: color-mix(in srgb, var(--card) 70%, transparent);
-}
-.stamp.slam { animation: slam 0.45s cubic-bezier(.2,.9,.3,1.3); }
-@keyframes slam { from { transform: rotate(-9deg) scale(1.9); opacity: 0; } to { transform: rotate(-9deg) scale(1); opacity: 0.92; } }
-
-/* Stage */
-.stage { display: flex; flex-direction: column; gap: 18px; }
-.progress { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.bar { flex: 1; height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
-.bar span { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.35s ease; }
-
-h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.015em; }
-h1 { font-stretch: 112%; font-weight: 800; font-size: clamp(32px, 8.5vw, 44px); line-height: 1.02; }
-h2 { font-stretch: 106%; font-weight: 750; font-size: 24px; line-height: 1.15; }
-h3 { font-size: 15px; margin: 0; }
-p { margin: 0; max-width: 62ch; }
-.lede { font-size: 17px; color: var(--muted); }
-.muted { color: var(--muted); }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; margin-top: 18px; }
+.logo svg { width: 24px; height: 24px; color: var(--green); }
+h1 { margin: 0; font-weight: 800; font-size: 30px; line-height: 1.1; letter-spacing: -0.025em; text-wrap: balance; }
+h1.hero { font-size: 42px; line-height: 1.04; letter-spacing: -0.035em; }
+.sub { margin: -8px 0 0; color: var(--muted); font-size: 16.5px; max-width: 38ch; }
+.label { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .small { font-size: 13px; color: var(--muted); }
+.center { text-align: center; }
+.spacer { flex: 1; }
 
-.q { display: flex; flex-direction: column; gap: 10px; }
-.q-label { font-weight: 600; font-size: 15px; }
-.q-hint { font-size: 13px; color: var(--muted); margin-top: -6px; }
+.route { display: flex; align-items: center; gap: 12px; }
+.pill { border: 0; font: inherit; font-weight: 600; font-size: 15px; padding: 8px 15px; border-radius: 999px; background: var(--soft); color: var(--ink); }
+button.pill { cursor: pointer; }
+.pill.to { background: var(--green-soft); color: var(--green); }
+.route svg { width: 30px; height: 14px; color: var(--muted); }
 
+/* Rows, as on Verify it's you */
+.rows { display: grid; gap: 10px; }
+.row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; background: var(--soft); border-radius: 14px; padding: 14px; }
+.row.outlined { background: var(--bg); border: 1.5px solid var(--line); }
+.row .ic { width: 34px; height: 34px; border-radius: 10px; background: var(--bg); display: grid; place-items: center; color: var(--muted); font-weight: 800; font-size: 12px; }
+.row .ic.ok { color: var(--green); }
+.row .ic svg { width: 18px; height: 18px; }
+.row .t { font-weight: 700; font-size: 15.5px; }
+.row .d { font-size: 13px; color: var(--muted); }
+.row .tag { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.row .tag.go { color: var(--green); }
+.row-body { display: grid; gap: 10px; grid-column: 1 / -1; }
+
+.q { display: grid; gap: 10px; }
+.q-title { font-weight: 700; font-size: 15.5px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  font: inherit; font-size: 15px; font-weight: 500;
-  color: var(--ink); background: var(--card);
-  border: 1.5px solid var(--line); border-radius: 12px;
-  padding: 10px 14px; cursor: pointer; text-align: left;
-  transition: border-color 0.15s, background 0.15s;
-}
+.chip { font: inherit; font-size: 14.5px; font-weight: 600; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
 .chip:hover { border-color: var(--muted); }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
-.chip:focus-visible, .btn:focus-visible, input:focus-visible, .linkish:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.chip[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+.text-input { font: inherit; font-size: 16px; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 13px 14px; width: 100%; }
+.text-input::placeholder { color: var(--muted); opacity: 0.75; }
 
-.text-input {
-  font: inherit; font-size: 16px; color: var(--ink); background: var(--card);
-  border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; width: 100%;
-}
-.text-input::placeholder { color: var(--muted); opacity: 0.7; }
+/* PAN card, illustrative */
+.scan { background: #151a17; border-radius: 18px; padding: 22px; position: relative; }
+.scan .corner { position: absolute; width: 26px; height: 26px; border: 3px solid #3fb57e; }
+.scan .c1 { top: 12px; left: 12px; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+.scan .c2 { top: 12px; right: 12px; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
+.scan .c3 { bottom: 12px; left: 12px; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+.scan .c4 { bottom: 12px; right: 12px; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+.pan { background: linear-gradient(135deg, #efe6cf, #e2d6b6); border-radius: 12px; padding: 14px 16px; color: #3d3626; display: grid; grid-template-columns: 64px 1fr; gap: 6px 14px; }
+.pan .h { grid-column: 1 / -1; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; }
+.pan .photo { width: 64px; height: 74px; background: #cdbf9c; border-radius: 6px; }
+.pan .nm { font-weight: 700; font-size: 13px; align-self: end; }
+.pan .no { font-weight: 800; letter-spacing: 0.12em; font-size: 14px; }
+.scan .badge { position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); background: var(--green); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
 
-.check { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; }
-.check input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--ink); }
-.check.on { border-color: var(--ink); }
+/* Consent */
+.report { display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: center; background: var(--soft); border-radius: 14px; padding: 14px; }
+.report .flag { width: 46px; height: 46px; border-radius: 12px; background: var(--bg); display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+.reads { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.reads li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; font-size: 15.5px; }
+.reads svg { width: 18px; height: 18px; margin-top: 2px; }
+.reads .y { color: var(--green); }
+.reads .n { color: var(--muted); }
+.check { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: start; border-radius: 14px; padding: 16px; cursor: pointer; }
+.check.box { border: 1.5px solid var(--ink); }
+.check.soft { background: var(--soft); }
+.check input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--green); }
+.check .d { display: block; font-size: 13.5px; color: var(--muted); margin-top: 3px; }
+.who { font-size: 13px; color: var(--muted); }
 
-.nav { display: flex; gap: 10px; align-items: center; }
-.btn {
-  font: inherit; font-weight: 700; font-size: 16px; cursor: pointer;
-  border-radius: 14px; padding: 14px 18px; border: 1.5px solid var(--ink);
-}
-.btn.primary { background: var(--ink); color: var(--card); flex: 1; }
+/* Price */
+.pricebox { border: 1.5px solid var(--green); border-radius: 16px; padding: 18px; display: grid; gap: 12px; }
+.price { display: flex; align-items: baseline; gap: 10px; font-weight: 800; font-size: 44px; letter-spacing: -0.03em; line-height: 1; }
+.price small { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.why { background: var(--green-soft); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 24px 1fr; gap: 12px; }
+.why svg { width: 20px; height: 20px; color: var(--green); margin-top: 1px; }
+.why b { display: block; font-size: 15px; margin-bottom: 2px; }
+.why span { font-size: 14px; color: var(--muted); }
+.note { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; background: var(--soft); border-radius: 14px; padding: 12px 14px; font-size: 14px; }
+.note .ic { width: 34px; height: 34px; border-radius: 10px; background: var(--bg); display: grid; place-items: center; color: var(--muted); }
+.note .ic svg { width: 18px; height: 18px; }
+
+/* Bottom actions */
+.foot { display: grid; gap: 12px; }
+.btn { font: inherit; font-weight: 700; font-size: 16.5px; border: 0; border-radius: 14px; padding: 17px 18px; cursor: pointer; width: 100%; }
+.btn.primary { background: var(--green); color: #fff; }
 .btn.primary[disabled] { opacity: 0.35; cursor: not-allowed; }
-.btn.ghost { background: transparent; color: var(--ink); }
-.btn.wide { width: 100%; }
-.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); text-decoration: underline; cursor: pointer; }
-
-.promises { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
-.promises li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; }
-.promises svg { width: 18px; height: 18px; margin-top: 3px; color: var(--ok); }
-
-.panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 12px; }
-.panel-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.panel ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
-.panel .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.never li::marker { color: var(--warn); }
-
-.price {
-  display: flex; align-items: baseline; gap: 10px;
-  font-family: var(--display); font-stretch: 118%; font-weight: 900; font-size: 56px; line-height: 1;
-}
-.price small { font-family: var(--body); font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.btn.link { background: none; color: var(--green); padding: 6px; font-size: 15.5px; }
+.lock { display: flex; gap: 8px; justify-content: center; align-items: center; font-size: 13.5px; color: var(--muted); }
+.lock svg { width: 14px; height: 14px; }
 .error { color: var(--warn); font-size: 14px; font-weight: 600; }
 
+/* Done, as on You're approved */
+.done-mark { width: 82px; height: 82px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; margin: 26px auto 4px; }
+.done-mark svg { width: 40px; height: 40px; }
+.done-mark.pop { animation: pop 0.45s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.timeline { list-style: none; margin: 0; padding: 16px; background: var(--soft); border-radius: 16px; display: grid; gap: 0; }
+.timeline li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; position: relative; padding-bottom: 14px; }
+.timeline li:last-child { padding-bottom: 0; }
+.timeline li::before { content: ""; position: absolute; left: 6px; top: 16px; bottom: -2px; width: 2px; background: var(--line); }
+.timeline li:last-child::before { display: none; }
+.timeline .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); background: var(--bg); margin-top: 4px; position: relative; z-index: 1; }
+.timeline .on .dot { background: var(--green); border-color: var(--green); }
+.timeline .on::before { background: var(--green); }
+.timeline b { display: block; font-size: 15px; }
+.timeline span { font-size: 13px; color: var(--muted); }
 .share { display: flex; gap: 8px; }
-.share code { flex: 1; font-family: var(--mono); font-size: 13px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; }
-.next { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.share code { flex: 1; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; background: var(--soft); border-radius: 10px; padding: 11px 12px; overflow-x: auto; white-space: nowrap; }
+.share .btn { width: auto; padding: 10px 16px; font-size: 14.5px; background: var(--soft); color: var(--ink); }
 
-footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
-
-@media (max-width: 400px) {
-  .panel-cols { grid-template-columns: 1fr; }
-  .fields { gap: 8px 12px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-}
+button:focus-visible, input:focus-visible { outline: 3px solid #3fb57e; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="top">
-    <div class="wordmark" aria-label="Carryon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="3"></rect><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M8 12h8"></path></svg>
-      carryon
-    </div>
-    <span class="tag">Early access</span>
-  </header>
-
+<div class="phone">
   <div id="preview" class="preview" hidden></div>
-
-  <section class="pass" id="pass" aria-label="Your boarding pass">
-    <div class="pass-main">
-      <div class="pass-head"><span id="pass-label">Credit boarding pass</span><span id="pass-flag" class="example-flag"></span></div>
-      <div class="route">
-        <div class="end"><div class="code" id="p-from">IND</div><div class="place" id="p-from-name">India</div></div>
-        <div class="flight" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 15.6v-1.8l-8.3-5.2V3.4c0-.8-.6-1.4-1.2-1.4s-1.2.6-1.2 1.4v5.2l-8.3 5.2v1.8l8.3-2.6v5.2l-2.4 1.8V21L12 20.1l3.6.9v-1.8l-2.4-1.8V13z" transform="rotate(90 12 12)"></path></svg>
-          <div class="dash"></div>
-        </div>
-        <div class="end"><div class="code">USA</div><div class="place">United States</div></div>
-      </div>
-      <div class="fields">
-        <div class="field"><div class="k">Arrives</div><div class="v" id="p-arrives">In 1 to 3 months</div></div>
-        <div class="field"><div class="k">Traveller</div><div class="v" id="p-traveller">Master's student</div></div>
-        <div class="field"><div class="k">Home credit</div><div class="v" id="p-home">CIBIL 750+</div></div>
-        <div class="field"><div class="k">US profile</div><div class="v" id="p-us">Strong</div></div>
-      </div>
-    </div>
-    <div class="perf" aria-hidden="true"></div>
-    <div class="stub">
-      <div class="barcode" aria-hidden="true"></div>
-      <span class="status-pill" id="p-status">Example</span>
-    </div>
-    <div class="stamp" id="stamp" hidden>ON THE LIST</div>
-  </section>
-
-  <main class="stage" id="stage" aria-live="polite"></main>
-
-  <footer id="footer"></footer>
+  <main id="stage" class="screen" aria-live="polite"></main>
 </div>
 
 <script>
@@ -302,76 +173,55 @@ const CONFIG = {
 };
 
 /* ---------- Answer options (these exact words land in the sheet) ---------- */
-const COUNTRIES = [
-  ["India", "IND"], ["China", "CHN"], ["Nigeria", "NGA"], ["Mexico", "MEX"],
-  ["South Korea", "KOR"], ["Brazil", "BRA"], ["United Kingdom", "GBR"], ["Somewhere else", "INT"]
-];
-const STATUSES = [
-  ["Starting a US master's", "Master's student"],
-  ["Another degree (undergrad or PhD)", "Student"],
-  ["A job on an H-1B or other work visa", "Work visa"],
-  ["Something else", "Newcomer"]
-];
-const ARRIVALS = [
-  ["I'm already in the US", "Here now"],
-  ["Within a month", "Within a month"],
-  ["In 1 to 3 months", "In 1 to 3 months"],
-  ["More than 3 months away", "3+ months away"]
-];
+const COUNTRIES = ["India", "China", "Nigeria", "Mexico", "South Korea", "Brazil", "United Kingdom", "Somewhere else"];
+const VISAS = ["F-1 student visa", "H-1B or other work visa", "Another visa", "No visa yet"];
+const ARRIVALS = ["I'm already in the US", "Within a month", "In 1 to 3 months", "More than 3 months away"];
 const NEEDS = ["Credit card", "Apartment lease", "Phone plan", "Car loan or insurance", "Something else"];
 const EXPERIENCE = ["Declined for a credit card", "Asked for a guarantor or extra deposit", "Only offered a secured card", "Haven't applied for anything yet", "None of these"];
 const SCORE = ["Yes", "No", "Not sure"];
-const BANDS = [["750 or higher", "750+"], ["700 to 749", "700s"], ["650 to 699", "650s"], ["Below 650", "Under 650"], ["I don't know", "score unknown"]];
+const BANDS = ["750 or higher", "700 to 749", "650 to 699", "Below 650", "I don't know"];
 const YESNO = ["Yes", "No"];
 const HEARD = ["University email", "Student association", "WhatsApp or Telegram group", "A friend", "Instagram or LinkedIn", "Somewhere else"];
-const STEP_NAMES = ["opened", "about_you", "move", "credit", "consent", "price", "joined"];
+// last_step = the last screen finished: 0 opened, 1 verify, 2 PAN, 3 consent, 4 price, 5 match, 6 joined
+const STEP_NAMES = ["opened", "verify", "pan", "consent", "price", "match", "joined"];
 const TOTAL_STEPS = 6;
 
 /* ---------- State ---------- */
-const STORE_KEY = "carryon-waitlist-v1";
+const STORE_KEY = "carryon-waitlist-v2";
 const LIVE = Boolean(CONFIG.ENDPOINT);
 
 function rid(n) {
   const a = "abcdefghjkmnpqrstuvwxyz23456789";
-  let s = "";
   const buf = new Uint32Array(n);
-  (window.crypto || window.msCrypto).getRandomValues(buf);
+  window.crypto.getRandomValues(buf);
+  let s = "";
   for (let i = 0; i < n; i++) s += a[buf[i] % a.length];
   return s;
 }
-function params() {
-  try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(""); }
-}
+function params() { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(""); } }
 function freshState() {
   const q = params();
-  const v = q.get("v");
-  const p = Number(q.get("p"));
+  const v = q.get("v"), p = Number(q.get("p"));
   return {
-    session_id: rid(12),
-    started_at: new Date().toISOString(),
+    session_id: rid(12), started_at: new Date().toISOString(),
     consent_variant: (v === "plain" || v === "controls") ? v : (Math.random() < 0.5 ? "plain" : "controls"),
     price_variant: CONFIG.PRICES.includes(p) ? p : CONFIG.PRICES[Math.floor(Math.random() * CONFIG.PRICES.length)],
-    screen: 0, last_step: 0,
-    country: "", status: "", university: "", arrival: "", first_needs: [], experience: [],
+    screen: 0, last_step: 0, picking_country: false,
+    country: "India", status: "", university: "",
     home_score: "", home_score_band: "", pan: "",
-    consent_given: "", share_report_early: "",
-    price_choice: "", email: "", heard_from: "", contact_ok: false,
-    ref_in: (q.get("ref") || "").slice(0, 20),
-    ref_code: rid(6),
+    consent_given: "", share_report_early: "", price_choice: "",
+    arrival: "", first_needs: [], experience: [],
+    email: "", heard_from: "", contact_ok: false,
+    ref_in: (q.get("ref") || "").slice(0, 20), ref_code: rid(6),
     source: (q.get("src") || q.get("utm_source") || "").slice(0, 40),
     opened_sent: false, position: null
   };
 }
 function load() {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return Object.assign(freshState(), JSON.parse(raw));
-  } catch (e) {}
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) return Object.assign(freshState(), JSON.parse(raw)); } catch (e) {}
   return freshState();
 }
-function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
-}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} }
 let S;
 
 /* ---------- Sending to the sheet ---------- */
@@ -391,8 +241,7 @@ function payload() {
 function send() {
   if (!LIVE) return Promise.resolve({ saved: false, preview: true });
   return fetch(CONFIG.ENDPOINT, {
-    method: "POST",
-    mode: "no-cors",
+    method: "POST", mode: "no-cors",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload())
   }).then(() => ({ saved: true })).catch(() => ({ saved: false }));
@@ -403,229 +252,209 @@ function fetchPosition() {
     .then(r => r.json()).then(d => (d && Number.isFinite(d.joined) && d.joined > 0) ? d.joined : null)
     .catch(() => null);
 }
-function complete(step) {
-  if (step > S.last_step) S.last_step = step;
-  save();
-  return send();
-}
+function complete(step) { if (step > S.last_step) S.last_step = step; save(); return send(); }
 
 /* ---------- Helpers ---------- */
 const $ = (id) => document.getElementById(id);
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 const isIndia = () => S.country === "India";
-const isStudent = () => S.status === STATUSES[0][0] || S.status === STATUSES[1][0];
-const hereNow = () => S.arrival === ARRIVALS[0][0];
+const hereNow = () => S.arrival === ARRIVALS[0];
 const emailOk = () => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(S.email.trim());
-const short = (list, val) => (list.find(x => x[0] === val) || [])[1] || "";
+const homeName = () => (S.country === "Somewhere else" ? "home" : S.country);
 
-const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+const I = {
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"></path></svg>',
+  long: '<svg viewBox="0 0 30 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 7h27M22 2l6 5-6 5"></path></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg>',
+  card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>'
+};
 
 function chips(key, options, multi) {
-  const current = S[key];
-  return '<div class="chips" role="group">' + options.map(o => {
-    const val = Array.isArray(o) ? o[0] : o;
-    const on = multi ? current.includes(val) : current === val;
+  const cur = S[key];
+  return '<div class="chips" role="group">' + options.map(val => {
+    const on = multi ? cur.includes(val) : cur === val;
     return '<button type="button" class="chip" data-key="' + key + '" data-value="' + esc(val) + '"' + (multi ? ' data-multi="1"' : "") + ' aria-pressed="' + on + '">' + esc(val) + "</button>";
   }).join("") + "</div>";
 }
-function check(id, key, label) {
+function check(id, key, cls, title, detail) {
   const on = S[key] === "yes" || S[key] === true;
-  return '<label class="check' + (on ? " on" : "") + '" for="' + id + '"><input type="checkbox" id="' + id + '" data-check="' + key + '"' + (on ? " checked" : "") + "><span>" + label + "</span></label>";
+  return '<label class="check ' + cls + '" for="' + id + '"><input type="checkbox" id="' + id + '" data-check="' + key + '"' + (on ? " checked" : "") + "><span>" + title + (detail ? '<span class="d">' + detail + "</span>" : "") + "</span></label>";
 }
-function progress(n) {
-  return '<div class="progress"><span>Step ' + n + " of " + TOTAL_STEPS + '</span><div class="bar"><span style="width:' + Math.round(n / TOTAL_STEPS * 100) + '%"></span></div></div>';
+function bar(n) {
+  return '<div class="bar"><button type="button" class="back" data-act="back" aria-label="Back">' + I.back + '</button>' +
+    '<div class="steps"><span>Step ' + n + " of " + TOTAL_STEPS + '</span><div class="track"><i style="width:' + Math.round(n / TOTAL_STEPS * 100) + '%"></i></div></div></div>';
 }
-function nav(canGo, label) {
-  return '<div class="nav"><button type="button" class="btn ghost" data-act="back">Back</button><button type="button" class="btn primary" data-act="next" id="next"' + (canGo ? "" : " disabled") + ">" + (label || "Continue") + "</button></div>";
+function primary(label, enabled, act) {
+  return '<button type="button" class="btn primary" id="next" data-act="' + (act || "next") + '"' + (enabled ? "" : " disabled") + ">" + label + "</button>";
 }
 
-/* ---------- Screens ---------- */
-function screenLanding() {
-  return '' +
-    '<div class="q" style="gap:14px">' +
-      '<p class="small" style="font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase">For students and workers moving from India to the US</p>' +
-      "<h1>Your credit history flies with you.</h1>" +
-      '<p class="lede">Years of paying on time back home shouldn\'t count for nothing here. Carryon turns your CIBIL record into a US credit profile you can share with any bank or landlord.</p>' +
-    "</div>" +
-    '<ul class="promises">' +
-      "<li>" + CHECK_ICON + "<span>One payment. No commissions from banks, so we work only for you.</span></li>" +
-      "<li>" + CHECK_ICON + "<span>You choose every bank or landlord that sees your profile.</span></li>" +
-      "<li>" + CHECK_ICON + "<span>We never sell your data.</span></li>" +
-    "</ul>" +
-    '<button type="button" class="btn primary wide" data-act="start">Get early access</button>' +
-    '<p class="small">Takes about 2 minutes. Carryon isn\'t live yet, so you\'re joining the waitlist.</p>';
-}
-function screenAbout() {
-  return progress(1) +
-    "<h2>Let's start with your trip.</h2>" +
-    '<div class="q"><div class="q-label">Where are you moving from?</div>' + chips("country", COUNTRIES) + "</div>" +
-    '<div class="q"><div class="q-label">What brings you to the US?</div>' + chips("status", STATUSES) + "</div>" +
-    nav(S.country && S.status);
-}
-function screenMove() {
-  let extra = "";
-  if (isStudent()) {
-    extra += '<div class="q"><label class="q-label" for="uni">Which university? <span class="muted">(optional)</span></label><input id="uni" class="text-input" data-text="university" autocomplete="organization" placeholder="e.g. NYU, Columbia, Cornell Tech" value="' + esc(S.university) + '"></div>';
-  }
-  if (hereNow()) {
-    extra += '<div class="q"><div class="q-label">Since you arrived, has any of this happened? <span class="muted">(optional)</span></div><div class="q-hint">Pick all that apply.</div>' + chips("experience", EXPERIENCE, true) + "</div>";
-  }
-  return progress(2) +
-    "<h2>When do you land?</h2>" +
-    '<div class="q">' + chips("arrival", ARRIVALS) + "</div>" +
-    '<div class="q"><div class="q-label">What do you need credit for first?</div><div class="q-hint">Pick all that apply.</div>' + chips("first_needs", NEEDS, true) + "</div>" +
-    extra +
-    nav(S.arrival && S.first_needs.length);
-}
-function screenCredit() {
-  const bureau = isIndia() ? "a CIBIL score" : "a credit score back home";
-  let extra = "";
-  if (S.home_score === "Yes" && isIndia()) {
-    extra += '<div class="q"><div class="q-label">Roughly what is it? <span class="muted">(optional)</span></div>' + chips("home_score_band", BANDS) + "</div>";
-  }
-  if (isIndia()) {
-    extra += '<div class="q"><div class="q-label">Do you have a PAN card? <span class="muted">(optional)</span></div><div class="q-hint">Don\'t type your PAN number. We won\'t ask for it until launch.</div>' + chips("pan", YESNO) + "</div>";
-  }
-  return progress(3) +
-    "<h2>Your credit back home</h2>" +
-    '<div class="q"><div class="q-label">Do you have ' + bureau + "?</div>" + chips("home_score", SCORE) + "</div>" +
-    extra +
-    nav(Boolean(S.home_score));
-}
-function screenConsent() {
-  const report = isIndia() ? "CIBIL report" : "credit report";
-  let body = '<p class="lede">To build your US profile, Carryon will need to read your ' + report + " from " + (S.country && S.country !== "Somewhere else" ? esc(S.country) : "home") + ".</p>";
-  if (S.consent_variant === "controls") {
-    body += '<div class="panel">' +
-      '<div class="panel-cols">' +
-        '<div><div class="k">What we\'d read</div><ul><li>Payment history</li><li>Open accounts and limits</li><li>Recent credit checks</li><li>Your score</li></ul></div>' +
-        '<div class="never"><div class="k">What we never touch</div><ul><li>Bank balances</li><li>Transactions</li><li>Contacts or messages</li></ul></div>' +
-      "</div>" +
-      '<div><div class="k">Your controls</div><ul><li>You pick each bank or landlord that sees your profile.</li><li>Delete your profile any time.</li><li>We never sell your data or take commissions from banks.</li></ul></div>' +
-      '<div><div class="k">Who we are</div><p class="small" style="margin-top:6px">Himali, Tasos, Varun and Elena, a student team at Cornell Tech. Questions? Write to ' + esc(CONFIG.CONTACT_EMAIL) + ".</p></div>" +
+/* ---------- Screens, in the prototype's order ---------- */
+function sWelcome() {
+  const picker = S.picking_country
+    ? '<div class="q"><div class="q-title">Where is your credit record from?</div>' + chips("country", COUNTRIES) + "</div>"
+    : "";
+  return '<div class="logo">' + I.arrow + "carryon</div>" +
+    '<div class="spacer"></div>' +
+    '<div class="route"><button type="button" class="pill" data-act="pick-country" aria-label="Change home country">' + esc(S.country === "Somewhere else" ? "Home" : S.country) + "</button>" + I.long + '<span class="pill to">United States</span></div>' +
+    picker +
+    '<h1 class="hero">Your credit history moved with you.</h1>' +
+    '<p class="sub" style="margin-top:-4px">Turn your credit record from home into a US credit profile that banks trust. Get a card without starting from zero.</p>' +
+    '<div class="spacer"></div>' +
+    '<div class="foot">' + primary("Get early access", true, "start") +
+      '<p class="small center" style="margin:0">Carryon isn\'t live yet. Join the waitlist in about 2 minutes.</p>' +
+      '<div class="lock">' + I.lock + "<span>$" + S.price_variant + " once. We never sell your data.</span></div>" +
     "</div>";
+}
+function sVerify() {
+  const uni = S.status === VISAS[0]
+    ? '<div class="q"><label class="q-title" for="uni">Your university <span class="small">(optional)</span></label><input id="uni" class="text-input" data-text="university" autocomplete="organization" placeholder="e.g. NYU, Columbia, Cornell Tech" value="' + esc(S.university) + '"></div>'
+    : "";
+  return bar(1) +
+    "<h1>Verify it's you</h1>" +
+    '<p class="sub">No SSN needed. At launch you\'ll scan your passport and visa here in about 2 minutes. For now, tell us which visa you have.</p>' +
+    '<div class="rows">' +
+      '<div class="row"><div class="ic">' + I.doc + '</div><div><div class="t">Passport</div><div class="d">' + (isIndia() ? "Indian passport" : "Your passport") + '</div></div><span class="tag">At launch</span></div>' +
+      '<div class="row outlined"><div class="ic' + (S.status ? " ok" : "") + '">' + (S.status ? I.check : I.doc) + '</div><div><div class="t">US visa</div><div class="d">' + (S.status ? esc(S.status) : "Which one do you have?") + '</div></div><span class="tag go">' + (S.status ? "" : "Choose") + "</span>" +
+        '<div class="row-body">' + chips("status", VISAS) + "</div></div>" +
+      '<div class="row"><div class="ic">' + I.user + '</div><div><div class="t">Quick selfie</div><div class="d">Matches you to your passport</div></div><span class="tag">At launch</span></div>' +
+    "</div>" +
+    uni +
+    '<div class="spacer"></div>' +
+    '<div class="foot"><p class="small center" style="margin:0">Your documents will be used only to verify identity. Never sold.</p>' + primary("Continue", Boolean(S.status)) + "</div>";
+}
+function sPan() {
+  if (!isIndia()) {
+    return bar(2) +
+      "<h1>Your credit record from " + esc(homeName()) + "</h1>" +
+      '<p class="sub">This is how we\'ll find your history back home at launch.</p>' +
+      '<div class="q"><div class="q-title">Do you have a credit score in ' + esc(homeName()) + "?</div>" + chips("home_score", SCORE) + "</div>" +
+      '<div class="spacer"></div>' +
+      '<div class="foot">' + primary("Continue", Boolean(S.home_score)) + "</div>";
   }
-  return progress(4) +
-    "<h2>Can we read your credit report at launch?</h2>" +
-    body +
-    '<div class="q">' +
-      check("c-consent", "consent_given", "Yes, I'd give Carryon permission to read my " + report + " when it launches.") +
-      check("c-early", "share_report_early", isIndia()
-        ? "Email me first. I'd share my free annual CIBIL report to get an early US estimate."
-        : "Email me first. I'd share my credit report to get an early US estimate.") +
-      '<p class="small">Both are optional. Nothing is read or shared today.</p>' +
-    "</div>" +
-    nav(true);
+  const band = S.home_score === "Yes"
+    ? '<div class="q"><div class="q-title">Roughly what is it? <span class="small">(optional)</span></div>' + chips("home_score_band", BANDS) + "</div>"
+    : "";
+  return bar(2) +
+    "<h1>Scan your PAN card</h1>" +
+    '<p class="sub">Your PAN is how we find your record at CIBIL, India\'s credit bureau. Scanning opens at launch.</p>' +
+    '<div class="scan" aria-hidden="true"><span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>' +
+      '<div class="pan"><div class="h">PERMANENT ACCOUNT NUMBER</div><div class="photo"></div><div><div class="nm">YOUR NAME</div><div class="no">AB&bull;&bull;&bull;&bull;&bull;12C</div></div></div>' +
+      '<span class="badge">Example</span></div>' +
+    '<div class="q" style="margin-top:8px"><div class="q-title">Do you have a PAN card?</div>' + chips("pan", YESNO) + "</div>" +
+    '<div class="q"><div class="q-title">Do you have a CIBIL score?</div>' + chips("home_score", SCORE) + "</div>" +
+    band +
+    '<div class="spacer"></div>' +
+    '<div class="foot"><p class="small center" style="margin:0">Don\'t type your PAN here. At launch it\'s stored encrypted and used only to find your credit record, after you consent on the next screen.</p>' + primary("Continue", Boolean(S.home_score)) + "</div>";
 }
-function screenPrice() {
+function sConsent() {
+  const bureau = isIndia() ? "CIBIL" : "credit bureau";
+  const reportName = isIndia() ? "CIBIL credit report" : "Credit report from " + esc(homeName());
+  const reads = S.consent_variant === "controls"
+    ? '<div class="label">What we read</div>' +
+      '<ul class="reads"><li><span class="y">' + I.check + '</span><span>Cards and loans you\'ve held</span></li>' +
+      '<li><span class="y">' + I.check + '</span><span>Payment history, limits and balances</span></li>' +
+      '<li><span class="n">' + I.x + '</span><span>Never your passwords. Never sold.</span></li></ul>' +
+      '<p class="who">You choose every lender that sees your profile, and you can delete it any time. Carryon is built by Himali, Tasos, Varun and Elena, a student team at Cornell Tech. Questions? ' + esc(CONFIG.CONTACT_EMAIL) + "</p>"
+    : "";
+  return bar(3) +
+    "<h1>Bring your credit history</h1>" +
+    '<p class="sub">Nothing is fetched until you give consent below.</p>' +
+    '<div class="report"><div class="flag">' + (isIndia() ? "IN" : "") + '</div><div><div style="font-weight:700;font-size:16px">' + reportName + '</div><div class="small">We\'ll find your record ' + (isIndia() ? "by PAN " : "") + "at launch</div></div></div>" +
+    reads +
+    check("c-consent", "consent_given", "box",
+      "I'd authorize Carryon to fetch my " + bureau + " credit report" + (isIndia() ? " using my PAN" : "") + ", turn it into a US credit profile, and share it only with lenders I choose. I can withdraw consent anytime.",
+      "Nothing is fetched today. We'll ask you to confirm at launch.") +
+    check("c-early", "share_report_early", "soft",
+      "<b>Optional: go first</b>",
+      isIndia() ? "Email me to share my free annual CIBIL report now for an early US estimate." : "Email me to share my credit report now for an early US estimate.") +
+    '<div class="spacer"></div>' +
+    '<div class="foot">' + primary(S.consent_given === "yes" ? "Allow and continue" : "Continue", true) + "</div>";
+}
+function sPrice() {
   const p = S.price_variant;
-  return progress(5) +
-    "<h2>Founding price</h2>" +
-    '<div class="price">$' + p + "<small>once, for 12 months</small></div>" +
-    '<ul class="promises">' +
-      "<li>" + CHECK_ICON + "<span>Your US-equivalent profile, with what drove it</span></li>" +
-      "<li>" + CHECK_ICON + "<span>Share it with as many banks and landlords as you like</span></li>" +
-      "<li>" + CHECK_ICON + "<span>No bank commissions, ever</span></li>" +
-    "</ul>" +
-    '<div class="q">' +
-      '<button type="button" class="btn primary wide" data-act="price" data-value="reserve">Reserve my spot at $' + p + "</button>" +
-      '<button type="button" class="btn ghost wide" data-act="price" data-value="notify">Just tell me when it launches</button>' +
-      '<p class="small">Nothing is charged now. We\'ll email you before launch, and you can change your mind then.</p>' +
-    "</div>" +
-    '<div class="nav"><button type="button" class="linkish" data-act="back">Back</button></div>';
+  return bar(4) +
+    "<h1>Unlock your US credit profile</h1>" +
+    '<p class="sub">One price. No subscription, no hidden fees.</p>' +
+    '<div class="pricebox"><div class="price">$' + p + "<small>one time</small></div>" +
+      '<ul class="reads"><li><span class="y">' + I.check + '</span><span>Verified US credit profile</span></li>' +
+      '<li><span class="y">' + I.check + '</span><span>Share with any bank or landlord for 12 months</span></li>' +
+      '<li><span class="y">' + I.check + '</span><span>AI assistant and dispute support</span></li></ul></div>' +
+    '<div class="why">' + I.shield + "<div><b>Why you pay us, not the banks</b><span>We never sell your data and take no commission from banks. Our only job is getting you approved.</span></div></div>" +
+    '<div class="note"><div class="ic">' + I.card + "</div><div>No charge today. Reserve now and we'll email you before launch to confirm.</div></div>" +
+    '<div class="spacer"></div>' +
+    '<div class="foot">' + primary("Reserve at $" + p, true, "reserve") +
+      '<button type="button" class="btn link" data-act="notify">Not now, just notify me</button></div>';
 }
-function screenEmail() {
-  return progress(6) +
-    "<h2>Where should we send your invite?</h2>" +
-    '<div class="q"><label class="q-label" for="email">Email</label><input id="email" class="text-input" type="email" inputmode="email" autocomplete="email" data-text="email" placeholder="you@university.edu" value="' + esc(S.email) + '"></div>' +
-    '<div class="q"><div class="q-label">How did you hear about Carryon? <span class="muted">(optional)</span></div>' + chips("heard_from", HEARD) + "</div>" +
-    '<div class="q">' + check("c-contact", "contact_ok", "Email me about early access. I can unsubscribe any time.") + "</div>" +
-    '<p class="small">We keep your answers and email in our team\'s private spreadsheet to plan the launch. This page never asks for your PAN number or credit report. To delete your answers, write to ' + esc(CONFIG.CONTACT_EMAIL) + ".</p>" +
+function sMatch() {
+  const exp = hereNow()
+    ? '<div class="q"><div class="q-title">Since you arrived, has any of this happened? <span class="small">(optional)</span></div>' + chips("experience", EXPERIENCE, true) + "</div>"
+    : "";
+  return bar(5) +
+    "<h1>Cards matched to you</h1>" +
+    '<p class="sub">At launch we match partner cards to your profile. Tell us what you need first.</p>' +
+    '<div class="q"><div class="q-title">When do you land?</div>' + chips("arrival", ARRIVALS) + "</div>" +
+    '<div class="q"><div class="q-title">What do you need credit for first?</div><div class="small" style="margin-top:-6px">Pick all that apply.</div>' + chips("first_needs", NEEDS, true) + "</div>" +
+    exp +
+    '<div class="spacer"></div>' +
+    '<div class="foot">' + primary("Continue", Boolean(S.arrival && S.first_needs.length)) + "</div>";
+}
+function sWaitlist() {
+  return bar(6) +
+    "<h1>Save your spot</h1>" +
+    '<p class="sub">' + (S.price_choice === "reserve" ? "Your $" + S.price_variant + " founding price is held. " : "") + "We'll send your early access invite here.</p>" +
+    '<div class="q"><label class="q-title" for="email">Email</label><input id="email" class="text-input" type="email" inputmode="email" autocomplete="email" data-text="email" placeholder="you@university.edu" value="' + esc(S.email) + '"></div>' +
+    '<div class="q"><div class="q-title">How did you hear about Carryon? <span class="small">(optional)</span></div>' + chips("heard_from", HEARD) + "</div>" +
+    check("c-contact", "contact_ok", "soft", "Email me about early access. I can unsubscribe any time.", "") +
+    '<p class="small" style="margin:0">We keep your answers and email in our team\'s private spreadsheet to plan the launch. This page never asks for your passport, visa or PAN number. To delete your answers, write to ' + esc(CONFIG.CONTACT_EMAIL) + ".</p>" +
     '<p class="error" id="err" hidden></p>' +
-    nav(emailOk() && S.contact_ok, "Join the waitlist");
+    '<div class="spacer"></div>' +
+    '<div class="foot">' + primary("Join the waitlist", emailOk() && S.contact_ok, "join") + "</div>";
 }
-function screenDone() {
-  const items = ["We'll email you before Carryon launches."];
-  if (S.share_report_early === "yes") items.push("You asked to go first, so we'll write soon to help you share your CIBIL report for an early US estimate.");
-  if (S.price_choice === "reserve") items.push("Your $" + S.price_variant + " founding price is held. Nothing is charged until you say yes.");
+function sDone() {
   const base = CONFIG.PUBLIC_URL || (LIVE ? location.origin + location.pathname : "");
   const link = base ? base + "?ref=" + S.ref_code : "";
-  return "<h2>You're on the list.</h2>" +
-    (S.position ? '<p class="lede">You\'re number ' + S.position + " on the waitlist.</p>" : "") +
-    '<div class="q"><div class="q-label">What happens next</div><ol class="next">' + items.map(i => "<li>" + esc(i) + "</li>").join("") + "</ol></div>" +
-    '<div class="q"><div class="q-label">Know someone moving to the US?</div>' +
-      (link
-        ? '<div class="share"><code id="share-link">' + esc(link) + '</code><button type="button" class="btn ghost" data-act="copy" id="copy">Copy</button></div>'
-        : '<p class="small">Your invite link appears here once the page is live.</p>') +
+  const steps = [
+    ["Joined the waitlist", "Today", true],
+    [S.share_report_early === "yes" ? "Early US estimate" : "Early access invite", S.share_report_early === "yes" ? "We'll email you this week" : "Before launch", false],
+    ["Your US credit profile", "At launch", false],
+    ["Your first card", "After launch", false]
+  ];
+  return '<div class="done-mark pop">' + I.check + "</div>" +
+    '<h1 class="center">You\'re on the list</h1>' +
+    '<p class="sub center" style="margin:-8px auto 0">' + (S.price_choice === "reserve" ? "Founding price $" + S.price_variant + " held. Nothing is charged until you say yes." : "We'll email you before Carryon launches.") + "</p>" +
+    (S.position ? '<p class="center" style="margin:0;font-weight:700">You\'re number ' + S.position + " on the waitlist</p>" : "") +
+    '<div class="label">Your spot</div>' +
+    '<ol class="timeline">' + steps.map(s => '<li class="' + (s[2] ? "on" : "") + '"><span class="dot"></span><div><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div></li>").join("") + "</ol>" +
+    '<div class="q"><div class="q-title">Know someone moving to the US?</div>' +
+      (link ? '<div class="share"><code id="share-link">' + esc(link) + '</code><button type="button" class="btn" data-act="copy">Copy</button></div>'
+            : '<p class="small" style="margin:0">Your invite link appears here once the page is live.</p>') +
     "</div>" +
-    '<button type="button" class="linkish" data-act="reset">Not you? Start over</button>';
+    '<div class="spacer"></div>' +
+    '<div class="foot"><button type="button" class="btn link" data-act="reset">Not you? Start over</button></div>';
 }
-const SCREENS = [screenLanding, screenAbout, screenMove, screenCredit, screenConsent, screenPrice, screenEmail, screenDone];
-
-/* ---------- Boarding pass ---------- */
-function setField(id, text, isPlaceholder) {
-  const el = $(id);
-  const changed = el.textContent !== text;
-  el.textContent = text;
-  el.classList.toggle("empty", Boolean(isPlaceholder));
-  if (changed && !isPlaceholder) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
-}
-function renderPass() {
-  const example = S.screen === 0;
-  $("pass-flag").textContent = example ? "Example" : "";
-  if (example) {
-    setField("p-from", "IND"); setField("p-from-name", "India");
-    setField("p-arrives", "In 1 to 3 months"); setField("p-traveller", "Master's student");
-    setField("p-home", "CIBIL 750+"); setField("p-us", "Strong");
-    $("p-status").textContent = "Example"; $("p-status").classList.remove("on");
-    $("stamp").hidden = true;
-    return;
-  }
-  const c = COUNTRIES.find(x => x[0] === S.country);
-  setField("p-from", c ? c[1] : "—", !c);
-  setField("p-from-name", c ? (c[0] === "Somewhere else" ? "Home country" : c[0]) : "Home country", !c);
-  setField("p-arrives", short(ARRIVALS, S.arrival) || "—", !S.arrival);
-  setField("p-traveller", short(STATUSES, S.status) || "—", !S.status);
-  let home = "—";
-  if (S.home_score === "Yes") home = isIndia() ? "CIBIL " + (short(BANDS, S.home_score_band) || "on file") : "Score on file";
-  else if (S.home_score === "No") home = "No score yet";
-  else if (S.home_score === "Not sure") home = "Not sure";
-  setField("p-home", home, !S.home_score);
-  const joined = S.screen === 7;
-  setField("p-us", joined ? (S.price_choice === "reserve" ? "Reserved" : "On the list") : "Pending", false);
-  $("p-status").textContent = joined ? "On the list" : "Boarding";
-  $("p-status").classList.toggle("on", joined);
-  const stamp = $("stamp");
-  if (joined && stamp.hidden) { stamp.hidden = false; stamp.classList.remove("slam"); void stamp.offsetWidth; stamp.classList.add("slam"); }
-  if (!joined) stamp.hidden = true;
-}
+const SCREENS = [sWelcome, sVerify, sPan, sConsent, sPrice, sMatch, sWaitlist, sDone];
 
 /* ---------- Render ---------- */
 function render() {
   $("stage").innerHTML = SCREENS[S.screen]();
-  renderPass();
   const pv = $("preview");
   if (!LIVE) {
     pv.hidden = false;
-    pv.innerHTML = "<strong>Preview.</strong> Answers on this copy aren't saved. You're seeing the " +
-      (S.consent_variant === "controls" ? "privacy-controls" : "plain") + " consent page and the $" + S.price_variant + " price.";
-  } else {
-    pv.hidden = true;
-  }
-  $("footer").textContent = "Carryon is an early-stage student project at Cornell Tech. Not live yet. No payment is taken on this page.";
+    pv.innerHTML = "<b>Preview.</b> Answers on this copy aren't saved. You're seeing the " + (S.consent_variant === "controls" ? "privacy-controls" : "plain") + " consent screen and the $" + S.price_variant + " price.";
+  } else pv.hidden = true;
   save();
 }
-function go(screen) {
-  S.screen = screen;
-  render();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
+function go(screen) { S.screen = screen; S.picking_country = false; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
 function refreshNext() {
   const btn = $("next");
-  if (!btn) return;
-  let ok = true;
-  if (S.screen === 6) ok = emailOk() && S.contact_ok;
-  btn.disabled = !ok;
+  if (btn && S.screen === 6) btn.disabled = !(emailOk() && S.contact_ok);
+  if (btn && S.screen === 3) btn.textContent = S.consent_given === "yes" ? "Allow and continue" : "Continue";
 }
 
 /* ---------- Events ---------- */
@@ -634,16 +463,15 @@ document.addEventListener("click", (ev) => {
   if (chip) {
     const key = chip.dataset.key, val = chip.dataset.value;
     if (chip.dataset.multi) {
-      const list = S[key];
-      const i = list.indexOf(val);
+      const list = S[key], i = list.indexOf(val);
       if (i >= 0) list.splice(i, 1); else list.push(val);
       if (key === "experience" && val === "None of these" && i < 0) S.experience = ["None of these"];
       else if (key === "experience" && val !== "None of these") S.experience = S.experience.filter(x => x !== "None of these");
     } else {
-      S[key] = S[key] === val ? "" : val;
+      S[key] = (S[key] === val && key !== "country") ? "" : val;
       if (key === "home_score" && S.home_score !== "Yes") S.home_score_band = "";
-      if (key === "country" && !isIndia()) { S.home_score_band = ""; S.pan = ""; }
-      if (key === "status" && !isStudent()) S.university = "";
+      if (key === "country") { S.picking_country = false; if (!isIndia()) { S.home_score_band = ""; S.pan = ""; } }
+      if (key === "status" && S.status !== VISAS[0]) S.university = "";
       if (key === "arrival" && !hereNow()) S.experience = [];
     }
     render();
@@ -651,37 +479,32 @@ document.addEventListener("click", (ev) => {
     if (again) again.focus();
     return;
   }
-  const act = ev.target.closest("[data-act]");
-  if (!act) return;
-  const a = act.dataset.act;
+  const el = ev.target.closest("[data-act]");
+  if (!el || el.disabled) return;
+  const a = el.dataset.act;
+  if (a === "pick-country") { S.picking_country = !S.picking_country; render(); return; }
   if (a === "start") { go(1); return; }
   if (a === "back") { go(Math.max(0, S.screen - 1)); return; }
   if (a === "next") {
-    if (act.disabled) return;
-    if (S.screen === 4) {
+    if (S.screen === 3) {
       S.consent_given = S.consent_given === "yes" ? "yes" : "no";
       S.share_report_early = S.share_report_early === "yes" ? "yes" : "no";
     }
-    if (S.screen === 6) { join(act); return; }
     complete(S.screen);
     go(S.screen + 1);
     return;
   }
-  if (a === "price") { S.price_choice = act.dataset.value; complete(5); go(6); return; }
+  if (a === "reserve" || a === "notify") { S.price_choice = a; complete(4); go(5); return; }
+  if (a === "join") { join(el); return; }
   if (a === "copy") {
     const text = $("share-link").textContent;
-    try {
-      navigator.clipboard.writeText(text).then(() => { act.textContent = "Copied"; }, () => { act.textContent = "Select and copy"; });
-    } catch (e) { act.textContent = "Select and copy"; }
+    try { navigator.clipboard.writeText(text).then(() => { el.textContent = "Copied"; }, () => { el.textContent = "Select and copy"; }); }
+    catch (e) { el.textContent = "Select and copy"; }
     return;
   }
   if (a === "reset") {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-    S = freshState();
-    S.opened_sent = true;
-    render();
-    complete(0);
-    return;
+    S = freshState(); S.opened_sent = true; render(); complete(0);
   }
 });
 document.addEventListener("change", (ev) => {
@@ -689,34 +512,24 @@ document.addEventListener("change", (ev) => {
   if (el.dataset && el.dataset.check) {
     const key = el.dataset.check;
     S[key] = key === "contact_ok" ? el.checked : (el.checked ? "yes" : "");
-    el.closest(".check").classList.toggle("on", el.checked);
-    save();
-    refreshNext();
+    save(); refreshNext();
   }
 });
 document.addEventListener("input", (ev) => {
   const el = ev.target;
-  if (el.dataset && el.dataset.text) {
-    S[el.dataset.text] = el.value.slice(0, 120);
-    save();
-    refreshNext();
-  }
+  if (el.dataset && el.dataset.text) { S[el.dataset.text] = el.value.slice(0, 120); save(); refreshNext(); }
 });
 
 async function join(btn) {
-  btn.disabled = true;
-  btn.textContent = "Saving your spot…";
-  const err = $("err");
-  err.hidden = true;
+  btn.disabled = true; btn.textContent = "Saving your spot…";
+  const err = $("err"); err.hidden = true;
   const prev = S.last_step;
   S.last_step = 6;
   const res = await send();
   if (LIVE && !res.saved) {
     S.last_step = prev;
     err.textContent = "We couldn't save your spot. Check your connection and try again.";
-    err.hidden = false;
-    btn.disabled = false;
-    btn.textContent = "Join the waitlist";
+    err.hidden = false; btn.disabled = false; btn.textContent = "Join the waitlist";
     return;
   }
   save();
