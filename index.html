@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carryon early access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: one column. A boarding pass sits on top and fills in as the traveller answers; questions sit below it. */
+  --paper: #eef1f6;
+  --card: #ffffff;
+  --ink: #15233f;
+  --muted: #5a6680;
+  --line: #d6dce7;
+  --accent: #df9410;
+  --accent-soft: #fbefd6;
+  --ok: #1d7a4b;
+  --warn: #a8361f;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d1422;
+    --card: #152036;
+    --ink: #e6ebf4;
+    --muted: #9ba7be;
+    --line: #2a3752;
+    --accent: #f0ae38;
+    --accent-soft: #3a2e14;
+    --ok: #4cc48a;
+    --warn: #f08a72;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d1422;
+  --card: #152036;
+  --ink: #e6ebf4;
+  --muted: #9ba7be;
+  --line: #2a3752;
+  --accent: #f0ae38;
+  --accent-soft: #3a2e14;
+  --ok: #4cc48a;
+  --warn: #f08a72;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 18px 16px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wordmark {
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.wordmark svg { width: 22px; height: 22px; }
+.tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.preview {
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.preview strong { color: var(--ink); }
+
+/* Boarding pass */
+.pass {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px -18px rgba(21, 35, 63, 0.45);
+  overflow: hidden;
+}
+.pass-main { padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 14px; }
+.pass-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.example-flag { color: var(--accent); font-weight: 600; }
+.route { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 10px; }
+.route .end:last-child { text-align: right; }
+.code {
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 900;
+  font-size: clamp(38px, 11vw, 54px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.place { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.flight { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 18px; color: var(--accent); }
+.flight svg { width: 30px; height: 30px; }
+.flight .dash { width: 64px; border-top: 2px dashed var(--line); }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.field .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.field .v { font-weight: 600; font-size: 15px; min-height: 22px; overflow-wrap: anywhere; }
+.field .v.empty { color: var(--line); }
+.field .v.flash { animation: flash 0.9s ease-out; }
+@keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
+
+.perf { position: relative; height: 0; border-top: 2px dashed var(--line); margin: 0 14px; }
+.perf::before, .perf::after {
+  content: ""; position: absolute; top: -12px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--paper); border: 1px solid var(--line);
+}
+.perf::before { left: -26px; }
+.perf::after { right: -26px; }
+.stub { padding: 12px 18px 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.barcode {
+  height: 34px; flex: 1; max-width: 230px;
+  background: repeating-linear-gradient(90deg,
+    var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px,
+    var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 16px,
+    var(--ink) 16px 17px, transparent 17px 19px, var(--ink) 19px 22px, transparent 22px 25px);
+  opacity: 0.85;
+  border-radius: 2px;
+}
+.status-pill {
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap;
+}
+.status-pill.on { color: var(--ok); border-color: var(--ok); }
+.stamp {
+  position: absolute; right: 18px; top: 56px;
+  font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: 20px; letter-spacing: 0.06em;
+  color: var(--ok); border: 3px solid var(--ok); border-radius: 10px; padding: 4px 12px;
+  transform: rotate(-9deg); opacity: 0.92; pointer-events: none; background: color-mix(in srgb, var(--card) 70%, transparent);
+}
+.stamp.slam { animation: slam 0.45s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes slam { from { transform: rotate(-9deg) scale(1.9); opacity: 0; } to { transform: rotate(-9deg) scale(1); opacity: 0.92; } }
+
+/* Stage */
+.stage { display: flex; flex-direction: column; gap: 18px; }
+.progress { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.bar { flex: 1; height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.35s ease; }
+
+h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.015em; }
+h1 { font-stretch: 112%; font-weight: 800; font-size: clamp(32px, 8.5vw, 44px); line-height: 1.02; }
+h2 { font-stretch: 106%; font-weight: 750; font-size: 24px; line-height: 1.15; }
+h3 { font-size: 15px; margin: 0; }
+p { margin: 0; max-width: 62ch; }
+.lede { font-size: 17px; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; color: var(--muted); }
+
+.q { display: flex; flex-direction: column; gap: 10px; }
+.q-label { font-weight: 600; font-size: 15px; }
+.q-hint { font-size: 13px; color: var(--muted); margin-top: -6px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: 15px; font-weight: 500;
+  color: var(--ink); background: var(--card);
+  border: 1.5px solid var(--line); border-radius: 12px;
+  padding: 10px 14px; cursor: pointer; text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chip:hover { border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+.chip:focus-visible, .btn:focus-visible, input:focus-visible, .linkish:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.text-input {
+  font: inherit; font-size: 16px; color: var(--ink); background: var(--card);
+  border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; width: 100%;
+}
+.text-input::placeholder { color: var(--muted); opacity: 0.7; }
+
+.check { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--ink); }
+.check.on { border-color: var(--ink); }
+
+.nav { display: flex; gap: 10px; align-items: center; }
+.btn {
+  font: inherit; font-weight: 700; font-size: 16px; cursor: pointer;
+  border-radius: 14px; padding: 14px 18px; border: 1.5px solid var(--ink);
+}
+.btn.primary { background: var(--ink); color: var(--card); flex: 1; }
+.btn.primary[disabled] { opacity: 0.35; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn.wide { width: 100%; }
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); text-decoration: underline; cursor: pointer; }
+
+.promises { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.promises li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; }
+.promises svg { width: 18px; height: 18px; margin-top: 3px; color: var(--ok); }
+
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 12px; }
+.panel-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.panel ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
+.panel .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.never li::marker { color: var(--warn); }
+
+.price {
+  display: flex; align-items: baseline; gap: 10px;
+  font-family: var(--display); font-stretch: 118%; font-weight: 900; font-size: 56px; line-height: 1;
+}
+.price small { font-family: var(--body); font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.error { color: var(--warn); font-size: 14px; font-weight: 600; }
+
+.share { display: flex; gap: 8px; }
+.share code { flex: 1; font-family: var(--mono); font-size: 13px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; }
+.next { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+
+footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+
+@media (max-width: 400px) {
+  .panel-cols { grid-template-columns: 1fr; }
+  .fields { gap: 8px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="wordmark" aria-label="Carryon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="3"></rect><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M8 12h8"></path></svg>
+      carryon
+    </div>
+    <span class="tag">Early access</span>
+  </header>
+
+  <div id="preview" class="preview" hidden></div>
+
+  <section class="pass" id="pass" aria-label="Your boarding pass">
+    <div class="pass-main">
+      <div class="pass-head"><span id="pass-label">Credit boarding pass</span><span id="pass-flag" class="example-flag"></span></div>
+      <div class="route">
+        <div class="end"><div class="code" id="p-from">IND</div><div class="place" id="p-from-name">India</div></div>
+        <div class="flight" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 15.6v-1.8l-8.3-5.2V3.4c0-.8-.6-1.4-1.2-1.4s-1.2.6-1.2 1.4v5.2l-8.3 5.2v1.8l8.3-2.6v5.2l-2.4 1.8V21L12 20.1l3.6.9v-1.8l-2.4-1.8V13z" transform="rotate(90 12 12)"></path></svg>
+          <div class="dash"></div>
+        </div>
+        <div class="end"><div class="code">USA</div><div class="place">United States</div></div>
+      </div>
+      <div class="fields">
+        <div class="field"><div class="k">Arrives</div><div class="v" id="p-arrives">In 1 to 3 months</div></div>
+        <div class="field"><div class="k">Traveller</div><div class="v" id="p-traveller">Master's student</div></div>
+        <div class="field"><div class="k">Home credit</div><div class="v" id="p-home">CIBIL 750+</div></div>
+        <div class="field"><div class="k">US profile</div><div class="v" id="p-us">Strong</div></div>
+      </div>
+    </div>
+    <div class="perf" aria-hidden="true"></div>
+    <div class="stub">
+      <div class="barcode" aria-hidden="true"></div>
+      <span class="status-pill" id="p-status">Example</span>
+    </div>
+    <div class="stamp" id="stamp" hidden>ON THE LIST</div>
+  </section>
+
+  <main class="stage" id="stage" aria-live="polite"></main>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+/* ---------- Settings the team edits ---------- */
+const CONFIG = {
+  ENDPOINT: "https://script.google.com/macros/s/AKfycbxy0XfEzWNcX3w_Pn-r_sqWgdlK7-z2qPbKolBRwGqX61BII8NFbO76SkQNOTl-5fHDDg/exec", // Google Apps Script web app URL. Empty = preview, nothing is saved.
+  PUBLIC_URL: "https://tasosger.github.io/carryon/", // Public address of this page, used for invite links.
+  CONTACT_EMAIL: "ag2766@cornell.edu",  // Shown on the consent and privacy text.
+  PRICES: [19, 29, 49]                  // Founding prices tested at random, in US dollars.
+};
+
+/* ---------- Answer options (these exact words land in the sheet) ---------- */
+const COUNTRIES = [
+  ["India", "IND"], ["China", "CHN"], ["Nigeria", "NGA"], ["Mexico", "MEX"],
+  ["South Korea", "KOR"], ["Brazil", "BRA"], ["United Kingdom", "GBR"], ["Somewhere else", "INT"]
+];
+const STATUSES = [
+  ["Starting a US master's", "Master's student"],
+  ["Another degree (undergrad or PhD)", "Student"],
+  ["A job on an H-1B or other work visa", "Work visa"],
+  ["Something else", "Newcomer"]
+];
+const ARRIVALS = [
+  ["I'm already in the US", "Here now"],
+  ["Within a month", "Within a month"],
+  ["In 1 to 3 months", "In 1 to 3 months"],
+  ["More than 3 months away", "3+ months away"]
+];
+const NEEDS = ["Credit card", "Apartment lease", "Phone plan", "Car loan or insurance", "Something else"];
+const EXPERIENCE = ["Declined for a credit card", "Asked for a guarantor or extra deposit", "Only offered a secured card", "Haven't applied for anything yet", "None of these"];
+const SCORE = ["Yes", "No", "Not sure"];
+const BANDS = [["750 or higher", "750+"], ["700 to 749", "700s"], ["650 to 699", "650s"], ["Below 650", "Under 650"], ["I don't know", "score unknown"]];
+const YESNO = ["Yes", "No"];
+const HEARD = ["University email", "Student association", "WhatsApp or Telegram group", "A friend", "Instagram or LinkedIn", "Somewhere else"];
+const STEP_NAMES = ["opened", "about_you", "move", "credit", "consent", "price", "joined"];
+const TOTAL_STEPS = 6;
+
+/* ---------- State ---------- */
+const STORE_KEY = "carryon-waitlist-v1";
+const LIVE = Boolean(CONFIG.ENDPOINT);
+
+function rid(n) {
+  const a = "abcdefghjkmnpqrstuvwxyz23456789";
+  let s = "";
+  const buf = new Uint32Array(n);
+  (window.crypto || window.msCrypto).getRandomValues(buf);
+  for (let i = 0; i < n; i++) s += a[buf[i] % a.length];
+  return s;
+}
+function params() {
+  try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(""); }
+}
+function freshState() {
+  const q = params();
+  const v = q.get("v");
+  const p = Number(q.get("p"));
+  return {
+    session_id: rid(12),
+    started_at: new Date().toISOString(),
+    consent_variant: (v === "plain" || v === "controls") ? v : (Math.random() < 0.5 ? "plain" : "controls"),
+    price_variant: CONFIG.PRICES.includes(p) ? p : CONFIG.PRICES[Math.floor(Math.random() * CONFIG.PRICES.length)],
+    screen: 0, last_step: 0,
+    country: "", status: "", university: "", arrival: "", first_needs: [], experience: [],
+    home_score: "", home_score_band: "", pan: "",
+    consent_given: "", share_report_early: "",
+    price_choice: "", email: "", heard_from: "", contact_ok: false,
+    ref_in: (q.get("ref") || "").slice(0, 20),
+    ref_code: rid(6),
+    source: (q.get("src") || q.get("utm_source") || "").slice(0, 40),
+    opened_sent: false, position: null
+  };
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return Object.assign(freshState(), JSON.parse(raw));
+  } catch (e) {}
+  return freshState();
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+let S;
+
+/* ---------- Sending to the sheet ---------- */
+function payload() {
+  return {
+    session_id: S.session_id, started_at: S.started_at,
+    last_step: S.last_step, step_name: STEP_NAMES[S.last_step],
+    consent_variant: S.consent_variant, price_variant: S.price_variant,
+    country: S.country, status: S.status, university: S.university.trim(),
+    arrival: S.arrival, first_needs: S.first_needs.join("; "), experience: S.experience.join("; "),
+    home_score: S.home_score, home_score_band: S.home_score_band, pan: S.pan,
+    consent_given: S.consent_given, share_report_early: S.share_report_early,
+    price_choice: S.price_choice, email: S.email.trim(), heard_from: S.heard_from,
+    ref_in: S.ref_in, ref_code: S.ref_code, source: S.source
+  };
+}
+function send() {
+  if (!LIVE) return Promise.resolve({ saved: false, preview: true });
+  return fetch(CONFIG.ENDPOINT, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload())
+  }).then(() => ({ saved: true })).catch(() => ({ saved: false }));
+}
+function fetchPosition() {
+  if (!LIVE) return Promise.resolve(null);
+  return fetch(CONFIG.ENDPOINT + (CONFIG.ENDPOINT.includes("?") ? "&" : "?") + "count=1")
+    .then(r => r.json()).then(d => (d && Number.isFinite(d.joined) && d.joined > 0) ? d.joined : null)
+    .catch(() => null);
+}
+function complete(step) {
+  if (step > S.last_step) S.last_step = step;
+  save();
+  return send();
+}
+
+/* ---------- Helpers ---------- */
+const $ = (id) => document.getElementById(id);
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+const isIndia = () => S.country === "India";
+const isStudent = () => S.status === STATUSES[0][0] || S.status === STATUSES[1][0];
+const hereNow = () => S.arrival === ARRIVALS[0][0];
+const emailOk = () => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(S.email.trim());
+const short = (list, val) => (list.find(x => x[0] === val) || [])[1] || "";
+
+const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+
+function chips(key, options, multi) {
+  const current = S[key];
+  return '<div class="chips" role="group">' + options.map(o => {
+    const val = Array.isArray(o) ? o[0] : o;
+    const on = multi ? current.includes(val) : current === val;
+    return '<button type="button" class="chip" data-key="' + key + '" data-value="' + esc(val) + '"' + (multi ? ' data-multi="1"' : "") + ' aria-pressed="' + on + '">' + esc(val) + "</button>";
+  }).join("") + "</div>";
+}
+function check(id, key, label) {
+  const on = S[key] === "yes" || S[key] === true;
+  return '<label class="check' + (on ? " on" : "") + '" for="' + id + '"><input type="checkbox" id="' + id + '" data-check="' + key + '"' + (on ? " checked" : "") + "><span>" + label + "</span></label>";
+}
+function progress(n) {
+  return '<div class="progress"><span>Step ' + n + " of " + TOTAL_STEPS + '</span><div class="bar"><span style="width:' + Math.round(n / TOTAL_STEPS * 100) + '%"></span></div></div>';
+}
+function nav(canGo, label) {
+  return '<div class="nav"><button type="button" class="btn ghost" data-act="back">Back</button><button type="button" class="btn primary" data-act="next" id="next"' + (canGo ? "" : " disabled") + ">" + (label || "Continue") + "</button></div>";
+}
+
+/* ---------- Screens ---------- */
+function screenLanding() {
+  return '' +
+    '<div class="q" style="gap:14px">' +
+      '<p class="small" style="font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase">For students and workers moving from India to the US</p>' +
+      "<h1>Your credit history flies with you.</h1>" +
+      '<p class="lede">Years of paying on time back home shouldn\'t count for nothing here. Carryon turns your CIBIL record into a US credit profile you can share with any bank or landlord.</p>' +
+    "</div>" +
+    '<ul class="promises">' +
+      "<li>" + CHECK_ICON + "<span>One payment. No commissions from banks, so we work only for you.</span></li>" +
+      "<li>" + CHECK_ICON + "<span>You choose every bank or landlord that sees your profile.</span></li>" +
+      "<li>" + CHECK_ICON + "<span>We never sell your data.</span></li>" +
+    "</ul>" +
+    '<button type="button" class="btn primary wide" data-act="start">Get early access</button>' +
+    '<p class="small">Takes about 2 minutes. Carryon isn\'t live yet, so you\'re joining the waitlist.</p>';
+}
+function screenAbout() {
+  return progress(1) +
+    "<h2>Let's start with your trip.</h2>" +
+    '<div class="q"><div class="q-label">Where are you moving from?</div>' + chips("country", COUNTRIES) + "</div>" +
+    '<div class="q"><div class="q-label">What brings you to the US?</div>' + chips("status", STATUSES) + "</div>" +
+    nav(S.country && S.status);
+}
+function screenMove() {
+  let extra = "";
+  if (isStudent()) {
+    extra += '<div class="q"><label class="q-label" for="uni">Which university? <span class="muted">(optional)</span></label><input id="uni" class="text-input" data-text="university" autocomplete="organization" placeholder="e.g. NYU, Columbia, Cornell Tech" value="' + esc(S.university) + '"></div>';
+  }
+  if (hereNow()) {
+    extra += '<div class="q"><div class="q-label">Since you arrived, has any of this happened? <span class="muted">(optional)</span></div><div class="q-hint">Pick all that apply.</div>' + chips("experience", EXPERIENCE, true) + "</div>";
+  }
+  return progress(2) +
+    "<h2>When do you land?</h2>" +
+    '<div class="q">' + chips("arrival", ARRIVALS) + "</div>" +
+    '<div class="q"><div class="q-label">What do you need credit for first?</div><div class="q-hint">Pick all that apply.</div>' + chips("first_needs", NEEDS, true) + "</div>" +
+    extra +
+    nav(S.arrival && S.first_needs.length);
+}
+function screenCredit() {
+  const bureau = isIndia() ? "a CIBIL score" : "a credit score back home";
+  let extra = "";
+  if (S.home_score === "Yes" && isIndia()) {
+    extra += '<div class="q"><div class="q-label">Roughly what is it? <span class="muted">(optional)</span></div>' + chips("home_score_band", BANDS) + "</div>";
+  }
+  if (isIndia()) {
+    extra += '<div class="q"><div class="q-label">Do you have a PAN card? <span class="muted">(optional)</span></div><div class="q-hint">Don\'t type your PAN number. We won\'t ask for it until launch.</div>' + chips("pan", YESNO) + "</div>";
+  }
+  return progress(3) +
+    "<h2>Your credit back home</h2>" +
+    '<div class="q"><div class="q-label">Do you have ' + bureau + "?</div>" + chips("home_score", SCORE) + "</div>" +
+    extra +
+    nav(Boolean(S.home_score));
+}
+function screenConsent() {
+  const report = isIndia() ? "CIBIL report" : "credit report";
+  let body = '<p class="lede">To build your US profile, Carryon will need to read your ' + report + " from " + (S.country && S.country !== "Somewhere else" ? esc(S.country) : "home") + ".</p>";
+  if (S.consent_variant === "controls") {
+    body += '<div class="panel">' +
+      '<div class="panel-cols">' +
+        '<div><div class="k">What we\'d read</div><ul><li>Payment history</li><li>Open accounts and limits</li><li>Recent credit checks</li><li>Your score</li></ul></div>' +
+        '<div class="never"><div class="k">What we never touch</div><ul><li>Bank balances</li><li>Transactions</li><li>Contacts or messages</li></ul></div>' +
+      "</div>" +
+      '<div><div class="k">Your controls</div><ul><li>You pick each bank or landlord that sees your profile.</li><li>Delete your profile any time.</li><li>We never sell your data or take commissions from banks.</li></ul></div>' +
+      '<div><div class="k">Who we are</div><p class="small" style="margin-top:6px">Himali, Tasos, Varun and Elena, a student team at Cornell Tech. Questions? Write to ' + esc(CONFIG.CONTACT_EMAIL) + ".</p></div>" +
+    "</div>";
+  }
+  return progress(4) +
+    "<h2>Can we read your credit report at launch?</h2>" +
+    body +
+    '<div class="q">' +
+      check("c-consent", "consent_given", "Yes, I'd give Carryon permission to read my " + report + " when it launches.") +
+      check("c-early", "share_report_early", isIndia()
+        ? "Email me first. I'd share my free annual CIBIL report to get an early US estimate."
+        : "Email me first. I'd share my credit report to get an early US estimate.") +
+      '<p class="small">Both are optional. Nothing is read or shared today.</p>' +
+    "</div>" +
+    nav(true);
+}
+function screenPrice() {
+  const p = S.price_variant;
+  return progress(5) +
+    "<h2>Founding price</h2>" +
+    '<div class="price">$' + p + "<small>once, for 12 months</small></div>" +
+    '<ul class="promises">' +
+      "<li>" + CHECK_ICON + "<span>Your US-equivalent profile, with what drove it</span></li>" +
+      "<li>" + CHECK_ICON + "<span>Share it with as many banks and landlords as you like</span></li>" +
+      "<li>" + CHECK_ICON + "<span>No bank commissions, ever</span></li>" +
+    "</ul>" +
+    '<div class="q">' +
+      '<button type="button" class="btn primary wide" data-act="price" data-value="reserve">Reserve my spot at $' + p + "</button>" +
+      '<button type="button" class="btn ghost wide" data-act="price" data-value="notify">Just tell me when it launches</button>' +
+      '<p class="small">Nothing is charged now. We\'ll email you before launch, and you can change your mind then.</p>' +
+    "</div>" +
+    '<div class="nav"><button type="button" class="linkish" data-act="back">Back</button></div>';
+}
+function screenEmail() {
+  return progress(6) +
+    "<h2>Where should we send your invite?</h2>" +
+    '<div class="q"><label class="q-label" for="email">Email</label><input id="email" class="text-input" type="email" inputmode="email" autocomplete="email" data-text="email" placeholder="you@university.edu" value="' + esc(S.email) + '"></div>' +
+    '<div class="q"><div class="q-label">How did you hear about Carryon? <span class="muted">(optional)</span></div>' + chips("heard_from", HEARD) + "</div>" +
+    '<div class="q">' + check("c-contact", "contact_ok", "Email me about early access. I can unsubscribe any time.") + "</div>" +
+    '<p class="small">We keep your answers and email in our team\'s private spreadsheet to plan the launch. This page never asks for your PAN number or credit report. To delete your answers, write to ' + esc(CONFIG.CONTACT_EMAIL) + ".</p>" +
+    '<p class="error" id="err" hidden></p>' +
+    nav(emailOk() && S.contact_ok, "Join the waitlist");
+}
+function screenDone() {
+  const items = ["We'll email you before Carryon launches."];
+  if (S.share_report_early === "yes") items.push("You asked to go first, so we'll write soon to help you share your CIBIL report for an early US estimate.");
+  if (S.price_choice === "reserve") items.push("Your $" + S.price_variant + " founding price is held. Nothing is charged until you say yes.");
+  const base = CONFIG.PUBLIC_URL || (LIVE ? location.origin + location.pathname : "");
+  const link = base ? base + "?ref=" + S.ref_code : "";
+  return "<h2>You're on the list.</h2>" +
+    (S.position ? '<p class="lede">You\'re number ' + S.position + " on the waitlist.</p>" : "") +
+    '<div class="q"><div class="q-label">What happens next</div><ol class="next">' + items.map(i => "<li>" + esc(i) + "</li>").join("") + "</ol></div>" +
+    '<div class="q"><div class="q-label">Know someone moving to the US?</div>' +
+      (link
+        ? '<div class="share"><code id="share-link">' + esc(link) + '</code><button type="button" class="btn ghost" data-act="copy" id="copy">Copy</button></div>'
+        : '<p class="small">Your invite link appears here once the page is live.</p>') +
+    "</div>" +
+    '<button type="button" class="linkish" data-act="reset">Not you? Start over</button>';
+}
+const SCREENS = [screenLanding, screenAbout, screenMove, screenCredit, screenConsent, screenPrice, screenEmail, screenDone];
+
+/* ---------- Boarding pass ---------- */
+function setField(id, text, isPlaceholder) {
+  const el = $(id);
+  const changed = el.textContent !== text;
+  el.textContent = text;
+  el.classList.toggle("empty", Boolean(isPlaceholder));
+  if (changed && !isPlaceholder) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+}
+function renderPass() {
+  const example = S.screen === 0;
+  $("pass-flag").textContent = example ? "Example" : "";
+  if (example) {
+    setField("p-from", "IND"); setField("p-from-name", "India");
+    setField("p-arrives", "In 1 to 3 months"); setField("p-traveller", "Master's student");
+    setField("p-home", "CIBIL 750+"); setField("p-us", "Strong");
+    $("p-status").textContent = "Example"; $("p-status").classList.remove("on");
+    $("stamp").hidden = true;
+    return;
+  }
+  const c = COUNTRIES.find(x => x[0] === S.country);
+  setField("p-from", c ? c[1] : "—", !c);
+  setField("p-from-name", c ? (c[0] === "Somewhere else" ? "Home country" : c[0]) : "Home country", !c);
+  setField("p-arrives", short(ARRIVALS, S.arrival) || "—", !S.arrival);
+  setField("p-traveller", short(STATUSES, S.status) || "—", !S.status);
+  let home = "—";
+  if (S.home_score === "Yes") home = isIndia() ? "CIBIL " + (short(BANDS, S.home_score_band) || "on file") : "Score on file";
+  else if (S.home_score === "No") home = "No score yet";
+  else if (S.home_score === "Not sure") home = "Not sure";
+  setField("p-home", home, !S.home_score);
+  const joined = S.screen === 7;
+  setField("p-us", joined ? (S.price_choice === "reserve" ? "Reserved" : "On the list") : "Pending", false);
+  $("p-status").textContent = joined ? "On the list" : "Boarding";
+  $("p-status").classList.toggle("on", joined);
+  const stamp = $("stamp");
+  if (joined && stamp.hidden) { stamp.hidden = false; stamp.classList.remove("slam"); void stamp.offsetWidth; stamp.classList.add("slam"); }
+  if (!joined) stamp.hidden = true;
+}
+
+/* ---------- Render ---------- */
+function render() {
+  $("stage").innerHTML = SCREENS[S.screen]();
+  renderPass();
+  const pv = $("preview");
+  if (!LIVE) {
+    pv.hidden = false;
+    pv.innerHTML = "<strong>Preview.</strong> Answers on this copy aren't saved. You're seeing the " +
+      (S.consent_variant === "controls" ? "privacy-controls" : "plain") + " consent page and the $" + S.price_variant + " price.";
+  } else {
+    pv.hidden = true;
+  }
+  $("footer").textContent = "Carryon is an early-stage student project at Cornell Tech. Not live yet. No payment is taken on this page.";
+  save();
+}
+function go(screen) {
+  S.screen = screen;
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function refreshNext() {
+  const btn = $("next");
+  if (!btn) return;
+  let ok = true;
+  if (S.screen === 6) ok = emailOk() && S.contact_ok;
+  btn.disabled = !ok;
+}
+
+/* ---------- Events ---------- */
+document.addEventListener("click", (ev) => {
+  const chip = ev.target.closest(".chip");
+  if (chip) {
+    const key = chip.dataset.key, val = chip.dataset.value;
+    if (chip.dataset.multi) {
+      const list = S[key];
+      const i = list.indexOf(val);
+      if (i >= 0) list.splice(i, 1); else list.push(val);
+      if (key === "experience" && val === "None of these" && i < 0) S.experience = ["None of these"];
+      else if (key === "experience" && val !== "None of these") S.experience = S.experience.filter(x => x !== "None of these");
+    } else {
+      S[key] = S[key] === val ? "" : val;
+      if (key === "home_score" && S.home_score !== "Yes") S.home_score_band = "";
+      if (key === "country" && !isIndia()) { S.home_score_band = ""; S.pan = ""; }
+      if (key === "status" && !isStudent()) S.university = "";
+      if (key === "arrival" && !hereNow()) S.experience = [];
+    }
+    render();
+    const again = document.querySelector('.chip[data-key="' + key + '"][data-value="' + CSS.escape(val) + '"]');
+    if (again) again.focus();
+    return;
+  }
+  const act = ev.target.closest("[data-act]");
+  if (!act) return;
+  const a = act.dataset.act;
+  if (a === "start") { go(1); return; }
+  if (a === "back") { go(Math.max(0, S.screen - 1)); return; }
+  if (a === "next") {
+    if (act.disabled) return;
+    if (S.screen === 4) {
+      S.consent_given = S.consent_given === "yes" ? "yes" : "no";
+      S.share_report_early = S.share_report_early === "yes" ? "yes" : "no";
+    }
+    if (S.screen === 6) { join(act); return; }
+    complete(S.screen);
+    go(S.screen + 1);
+    return;
+  }
+  if (a === "price") { S.price_choice = act.dataset.value; complete(5); go(6); return; }
+  if (a === "copy") {
+    const text = $("share-link").textContent;
+    try {
+      navigator.clipboard.writeText(text).then(() => { act.textContent = "Copied"; }, () => { act.textContent = "Select and copy"; });
+    } catch (e) { act.textContent = "Select and copy"; }
+    return;
+  }
+  if (a === "reset") {
+    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+    S = freshState();
+    S.opened_sent = true;
+    render();
+    complete(0);
+    return;
+  }
+});
+document.addEventListener("change", (ev) => {
+  const el = ev.target;
+  if (el.dataset && el.dataset.check) {
+    const key = el.dataset.check;
+    S[key] = key === "contact_ok" ? el.checked : (el.checked ? "yes" : "");
+    el.closest(".check").classList.toggle("on", el.checked);
+    save();
+    refreshNext();
+  }
+});
+document.addEventListener("input", (ev) => {
+  const el = ev.target;
+  if (el.dataset && el.dataset.text) {
+    S[el.dataset.text] = el.value.slice(0, 120);
+    save();
+    refreshNext();
+  }
+});
+
+async function join(btn) {
+  btn.disabled = true;
+  btn.textContent = "Saving your spot…";
+  const err = $("err");
+  err.hidden = true;
+  const prev = S.last_step;
+  S.last_step = 6;
+  const res = await send();
+  if (LIVE && !res.saved) {
+    S.last_step = prev;
+    err.textContent = "We couldn't save your spot. Check your connection and try again.";
+    err.hidden = false;
+    btn.disabled = false;
+    btn.textContent = "Join the waitlist";
+    return;
+  }
+  save();
+  S.position = await fetchPosition();
+  go(7);
+}
+
+/* ---------- Start ---------- */
+function start(snapshot) {
+  S = (snapshot && snapshot.session_id) ? Object.assign(freshState(), snapshot) : load();
+  render();
+  if (!S.opened_sent) { S.opened_sent = true; complete(0); }
+}
+if (window.claude && window.claude.hot) window.claude.hot.snapshot(() => S);
+if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(start);
+else start(window.claude && window.claude.hot ? window.claude.hot.data : {});
+</script>
+</body>
+</html>
